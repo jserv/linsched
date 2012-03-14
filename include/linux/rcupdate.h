@@ -836,7 +836,10 @@ void __kfree_rcu(struct rcu_head *head, unsigned long offset)
 {
 	typedef void (*rcu_callback)(struct rcu_head *);
 
+#ifndef __LINSCHED__
+	/* We can actually run LinSched in -O0 without this */
 	BUILD_BUG_ON(!__builtin_constant_p(offset));
+#endif
 
 	/* See the kfree_rcu() header comment. */
 	BUILD_BUG_ON(!__is_kfree_rcu_offset(offset));
