@@ -12,7 +12,7 @@
  */
 #define SCHEDSTAT_VERSION 15
 
-static int show_schedstat(struct seq_file *seq, void *v)
+int show_schedstat(struct seq_file *seq, void *v)
 {
 	int cpu;
 	int mask_len = DIV_ROUND_UP(NR_CPUS, 32) * 9;

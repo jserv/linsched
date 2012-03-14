@@ -4735,7 +4735,7 @@ out_unlock:
  *   needed, they will kick the idle load balancer, which then does idle
  *   load balancing for all the idle CPUs.
  */
-static struct {
+struct {
 	cpumask_var_t idle_cpus_mask;
 	atomic_t nr_cpus;
 	unsigned long next_balance;     /* in jiffy units */
