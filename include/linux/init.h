@@ -175,9 +175,15 @@ extern bool initcall_debug;
  * can point at the same handler without causing duplicate-symbol build errors.
  */
 
+#ifndef __LINSCHED__
 #define __define_initcall(level,fn,id) \
 	static initcall_t __initcall_##fn##id __used \
 	__attribute__((__section__(".initcall" level ".init"))) = fn
+#else
+#define __define_initcall(level,fn,id) \
+	initcall_t __initcall_##fn##id __used \
+	__attribute__((__section__(".initcall" level ".init"))) = fn
+#endif
 
 /*
  * Early initcalls run before initializing SMP.
