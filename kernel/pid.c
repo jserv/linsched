@@ -96,6 +96,7 @@ int is_container_init(struct task_struct *tsk)
 }
 EXPORT_SYMBOL(is_container_init);
 
+#ifndef __LINSCHED__
 /*
  * Note: disable interrupts while the pidmap_lock is held as an
  * interrupt might come in and do read_lock(&tasklist_lock).
@@ -326,6 +327,7 @@ out_free:
 	pid = NULL;
 	goto out;
 }
+#endif /*__LINSCHED__*/
 
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
@@ -361,6 +363,7 @@ void attach_pid(struct task_struct *task, enum pid_type type,
 	hlist_add_head_rcu(&link->node, &pid->tasks[type]);
 }
 
+#ifndef __LINSCHED__
 static void __change_pid(struct task_struct *task, enum pid_type type,
 			struct pid *new)
 {
@@ -571,3 +574,4 @@ void __init pidmap_init(void)
 	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC);
 }
+#endif /*__LINSCHED__*/
