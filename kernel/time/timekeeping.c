@@ -1040,7 +1040,8 @@ static void update_wall_time(void)
 	 * Store full nanoseconds into xtime after rounding it up and
 	 * add the remainder to the error difference.
 	 */
-	xtime.tv_nsec =	((s64) timekeeper.xtime_nsec >> timekeeper.shift) + 1;
+	xtime.tv_nsec = ((s64)timekeeper.xtime_nsec +
+			 (1ULL << timekeeper.shift) - 1) >> timekeeper.shift;
 	timekeeper.xtime_nsec -= (s64) xtime.tv_nsec << timekeeper.shift;
 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
 				timekeeper.ntp_error_shift;
