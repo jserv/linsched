@@ -1,0 +1,27 @@
+# This is designed to be able to run from any directory, using either
+# the current directory's mcarlo-sim program or the normal one if that
+# does not exist. All output goes into ./$(topology)-results/*
+#
+# This allows multiple copies of this test to easily be run at once.
+base := $(dir $(lastword $(MAKEFILE_LIST)))mcarlo-sims
+
+sims := $(addprefix sim-,$(shell seq 1 500))
+
+exec := $(or $(wildcard mcarlo-sim) $(base)/mcarlo-sim)
+
+topologies := uniprocessor dual_cpu dual_cpu_mc quad_cpu quad_cpu_mc \
+              quad_cpu_dual_socket quad_cpu_quad_socket hex_cpu_dual_socket_smt
+
+cur_topo = $(firstword $*)
+cur_sim = $(lastword $*)
+
+run_all_tests:  $(foreach topo,$(topologies),\
+                          $(foreach sim,$(sims),run_one_test_$(topo)\ $(sim)))
+
+
+run_one_test_%:
+	@mkdir -p $(cur_topo)-results
+	./mcarlo-sim --print_average_imbalance -t $(cur_topo) -f $(base)/$(cur_sim) \
+		--duration 60000 -s 13074863168640 --print_sched_stats --print_cgroup_stats --print_nohz_stats | \
+		sed -n -e '2,/^$$/p' -e '/^--/,/^$$/p' > \
+		$(cur_topo)-results/$(cur_sim)

@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+import os
+from optparse import OptionParser
+
+def score_basic(filename):
+    f = file(filename)
+    for line in f:
+        if line.startswith("average imbalance"):
+            split = line.split()
+            if len(split) > 3:
+                return [float(split[2]), float(split[3])]
+            return [float(split[2]), 0]
+
+def score_total_lb(filename):
+    f = file(filename)
+    for line in f:
+        if line.startswith("domain"):
+            line = line.split()
+            #lb_count for each idle
+            #does not count active load balance
+            return sum([float(line[x]) for x in [2,10,18]])
+    return 0
+
+def score_total_runtime(filename):
+    f = file(filename)
+    for line in f:
+        if line.startswith("CGroup = / "):
+            return float(line.split()[-1])
+
+def score_sub_runtime(filename):
+    f = file(filename)
+    l = []
+    inSection = False
+    for line in f:
+        if line.startswith("------ group runtime"):
+            inSection = True
+        if inSection and line.startswith("CGroup = /"):
+            l += [float(line.split()[-1])]
+    if l == []:
+        return None
+    return l
+
+def delta_basic(old, new):
+    return new - old
+
+def delta_percent(old, new):
+    return 100.0 * (new - old) / new
+
+def delta_min_percent(old, new):
+    div = min(new, old)
+    if div != 0:
+        return 100.0 * (new - old) / div
+    else:
+        return None
+
+SCORE_FN = score_basic
+DELTA_FN = delta_basic
+
+
+def sim_delta_list(sim1, sim2, topo):
+    l = [(None, "")] * 500
+    for i in xrange(1,500):
+        f = "sim-%d" % i
+        old = new = None
+        try:
+            old = SCORE_FN(os.path.join(sim1, topo, f))
+            new = SCORE_FN(os.path.join(sim2, topo, f))
+        except IOError:
+            pass
+        if old and new:
+            if isinstance(old, list) and isinstance(old, list):
+                d = map(DELTA_FN, old, new)
+            else:
+                d = DELTA_FN(old, new)
+            l[i] = (d, f)
+    return l
+
+def format_delta(dlist):
+    if not isinstance(dlist, list):
+        dlist = [dlist]
+    out = ""
+    for d in dlist:
+        out += " %5.4f" % d
+    return out
+
+def dump_sim_deltas(sim1, sim2, topo):
+    for (d, f) in sim_delta_list(sim1, sim2, topo):
+        if d != None:
+            print f, format_delta(d)
+
+def avg_topo_deltas(sim1, sim2, topo):
+    sum = 0
+    count = 0
+    for (d, f) in sim_delta_list(sim1, sim2, topo):
+        if d != None:
+            if isinstance(d, list):
+                d = d[0]
+            sum += d
+            count += 1
+    if count > 0:
+        return sum / count
+    else:
+        return None
+
+def avg_all_topos(sim1, sim2):
+    l = os.listdir(sim1)
+    l.sort()
+    for topo in l:
+        if topo.endswith("-results"):
+            print topo + " " + str(avg_topo_deltas(sim1, sim2, topo))
+
+
+parser = OptionParser("usage: %prog [options] <old> <new> command <command args>")
+parser.add_option("-s", "--score", dest="score",
+                  help="scoring function for a single run (basic, div_load)")
+parser.add_option("-d", "--delta", dest="delta",
+                  help="difference function between runs (basic, percent, min_percent)")
+parser.epilog = """Valid commands:
+dump <topology> - print all the deltas for the given topology
+avg_topo <topology> - prints the average delta
+avg_results - prints the average delta for all topologies
+"""
+
+def format(f):
+    return parser.epilog
+parser.format_epilog = format
+
+(options, args) = parser.parse_args()
+if options.score != None:
+    m = {'basic' : score_basic, 'total_lb' : score_total_lb,
+         'total_runtime' : score_total_runtime,
+         'sub_runtime' : score_sub_runtime}
+    SCORE_FN=m[options.score]
+if options.delta != None:
+    m = {'basic' : delta_basic, 'percent' : delta_percent,
+         'min_percent' : delta_min_percent}
+    DELTA_FN=m[options.delta]
+
+if args[2] == "dump":
+    dump_sim_deltas(args[0], args[1], args[3])
+elif args[2] == "avg_topo":
+    print avg_topo_deltas(args[0], args[1], args[3])
+elif args[2] == "avg_results":
+    avg_all_topos(args[0], args[1])

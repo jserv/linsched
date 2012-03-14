@@ -1,0 +1,60 @@
+WHAT IS LINSCHED?
+
+   LinSched is a user-space program that hosts the Linux scheduling subsystem.
+   Its purpose is to provide a tool for observing and modifying the behavior
+   of the Linux scheduler. This makes it a valuable tool in prototyping new
+   Linux scheduling policies, in a way that may be easier (or otherwise less
+   painful or time-consuming) to many developers when compared to working with
+   real hardware. Due to the high degree of code sharing between LinSched and
+   the Linux scheduler, porting LinSched code to Linux is reasonably
+   straightforward. LinSched may be especially useful to those who are new to
+   Linux scheduler development.
+
+WHAT ARE SOME TYPICAL USES OF LINSCHED?
+
+   In addition to bringing all the advantages of userspace development and
+   debugging to the scheduler code, Linsched also serves as a testing tool
+   to validate the correctness of the scheduler. Linsched has the notion of
+   hardware topologies which allows the user to create arbitrary hardware
+   models and runs simulations of scheduler behavior on them. This allows
+   for development of scheduler code without having access to specific types
+   of hardware.
+
+HOW DO I BUILD/RUN LINSCHED TESTS?
+
+   Simply running make in the linsched subdirectory should build the code
+   (ensure that you are using gcc v4.4+). To run tests use:
+
+   make run_all_tests
+
+   which validates some basic kernel functionality on a bunch of hardware
+   models.
+
+WHAT LINUX KERNEL FEATURES ARE MODELED IN LINSCHED?
+
+   The following kernel features are supported for simulation:
+    -- Group scheduling
+    -- Ability to specify arbitrary sleep/wakeup patterns for tasks
+    -- High resolution timers
+    -- Tickless scheduler (no hz)
+    -- sched domain support for all levels
+
+   The above features can be used to generate very accurate simulations
+   that mimic real world workloads.
+
+HOW DO I ADD NEW HARDWARE TOPOLOGIES?
+
+   See linsched/linux_linsched.h for examples on how hardware topologies
+   are defined. Select the required topology when you run your tests. See
+   linsched/basic_tests.c for examples.
+
+WHAT ARE SOME OF THE LIMITATIONS?
+
+   Linsched does not verify locking in the scheduler code since its
+   execution is single threaded. Lock contention and other SMP artifacts
+   are also not captured in the simulation. Consequently performance
+   impacts due to these are not covered.
+
+
+
+
