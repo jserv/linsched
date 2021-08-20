@@ -15,4 +15,4 @@ ${UNIX_TESTS}: ${OBJ_FILES} $$@.o
 	@echo CC UNIX_TEST $@
 	@${LD_PERCPU} -o $@.percpu $^
 #two definitions of mktime
-	@${CC} -Wl,--allow-multiple-definition -static -o $@ $@.percpu -lrt -lm -lpcre
+	@${CC} -Wl,--allow-multiple-definition -static -o $@ $@.percpu -lrt -lm -lpcre -lpthread

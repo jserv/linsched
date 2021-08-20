@@ -33,7 +33,7 @@ TEST_DEPS := ${TESTS:%=%.d}
 ${TESTS}: ${OBJ_FILES} $$@.o
 	@echo CC TEST $@
 	@${LD_PERCPU} -o $@.percpu $^
-	@${CC} ${LFLAGS} -o $@ $@.percpu -MMD
+	@${CC} -o $@ $@.percpu -MMD ${LFLAGS}
 	@rm $@.percpu
 
 clean:
