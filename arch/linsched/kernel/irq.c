@@ -1,6 +1,7 @@
 #include <linux/interrupt.h>
 #include <asm/hardirq.h>
 #include <linux/sched.h>
+#include <linux/tick.h>
 
 unsigned long linsched_irq_flags = ARCH_IRQ_ENABLED;
 
@@ -81,6 +82,9 @@ void irq_exit(void)
 	sub_preempt_count(IRQ_EXIT_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
 		do_softirq();
+
+	if (idle_cpu(smp_processor_id()) && !in_interrupt() && !need_resched())
+		tick_nohz_irq_exit();
 }
 
 void local_bh_enable_ip(unsigned long ip)
