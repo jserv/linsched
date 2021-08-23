@@ -206,7 +206,6 @@ void linsched_run_sim(int sim_ticks)
 			/* a handler should never leave this state changed */
 			BUG_ON(smp_processor_id() != active_cpu);
 
-			process_all_softirqs();
 			linsched_rcu_invoke();
 
 			BUG_ON(irqs_disabled());
