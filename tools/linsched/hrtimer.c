@@ -158,6 +158,24 @@ void linsched_enter_idle(void)
 		tick_nohz_idle_enter();
 }
 
+cpumask_t linsched_cpu_resched_pending;
+void process_pending_resched(void)
+{
+	int cpu, old_cpu = smp_processor_id();
+
+	if (cpumask_empty(&linsched_cpu_resched_pending))
+		return;
+
+	while (!cpumask_empty(&linsched_cpu_resched_pending)) {
+		cpu = cpumask_first(&linsched_cpu_resched_pending);
+		linsched_change_cpu(cpu);
+		cpumask_clear_cpu(cpu, &linsched_cpu_resched_pending);
+		schedule();
+	}
+
+	linsched_change_cpu(old_cpu);
+}
+
 /* Run a simulation for some number of ticks. Each tick,
  * scheduling and load balancing decisions are made. Obviously, we
  * could create tasks, change priorities, etc., at certain ticks
@@ -216,6 +234,9 @@ void linsched_run_sim(int sim_ticks)
 			BUG_ON(smp_processor_id() != active_cpu);
 
 			linsched_rcu_invoke();
+
+			process_pending_resched();
+			linsched_check_idle_cpu();
 
 			BUG_ON(irqs_disabled());
 			if (idle_cpu(active_cpu) && !need_resched()) {

@@ -45,6 +45,8 @@ extern struct linsched_cgroup __linsched_cgroups[LINSCHED_MAX_GROUPS];
 
 extern u64 current_time;
 
+extern cpumask_t linsched_cpu_resched_pending;
+
 struct task_data {
 	void *data;
 	void (*init_task) (struct task_struct *, void *data);

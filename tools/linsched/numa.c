@@ -113,6 +113,8 @@ void linsched_trigger_cpu(int cpu)
 	 * Call the scheduler ipi when queueing up tasks on the wakelist
 	 */
 	scheduler_ipi();
+	if (need_resched())
+		cpumask_set_cpu(cpu, &linsched_cpu_resched_pending);
 	linsched_change_cpu(curr_cpu);
 }
 
