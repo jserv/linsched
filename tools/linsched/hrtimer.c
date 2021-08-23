@@ -149,6 +149,15 @@ void linsched_check_idle_cpu(void)
 	}
 }
 
+void linsched_enter_idle(void)
+{
+	int cpu = smp_processor_id();
+	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+
+	if (!ts->inidle && idle_cpu(cpu))
+		tick_nohz_idle_enter();
+}
+
 /* Run a simulation for some number of ticks. Each tick,
  * scheduling and load balancing decisions are made. Obviously, we
  * could create tasks, change priorities, etc., at certain ticks
@@ -210,7 +219,7 @@ void linsched_run_sim(int sim_ticks)
 
 			BUG_ON(irqs_disabled());
 			if (idle_cpu(active_cpu) && !need_resched()) {
-				tick_nohz_idle_enter();
+				linsched_enter_idle();
 			} else {
 				linsched_current_handler();
 			}
