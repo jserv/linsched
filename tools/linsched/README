@@ -44,9 +44,9 @@ WHAT LINUX KERNEL FEATURES ARE MODELED IN LINSCHED?
 
 HOW DO I ADD NEW HARDWARE TOPOLOGIES?
 
-   See linsched/linux_linsched.h for examples on how hardware topologies
+   See linux_linsched.h for examples on how hardware topologies
    are defined. Select the required topology when you run your tests. See
-   linsched/basic_tests.c for examples.
+   tests/basic_tests.c for examples.
 
 WHAT ARE SOME OF THE LIMITATIONS?
 
